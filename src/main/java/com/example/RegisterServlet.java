@@ -14,12 +14,15 @@ public class RegisterServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=UTF-8");
 
-        String userID = request.getParameter("userID");
+        String username = request.getParameter("username");
         String password = request.getParameter("password");
+        String adminFlagStr = request.getParameter("adminflag");
+        int adminflag = (adminFlagStr != null && adminFlagStr.equals("1")) ? 1 : 0;
 
-        User user = new User();
-        user.setUserID(userID);
+        User user = new User(username, password,adminflag);
+        user.setusername(username);
         user.setPassword(password);
+        user.setAdminflag(adminflag);
 
         UserDAO userDAO = new UserDAO();
         try {
@@ -29,6 +32,6 @@ public class RegisterServlet extends HttpServlet {
 			e.printStackTrace();
 		}
 
-        response.sendRedirect("index.html");
+        response.sendRedirect("UserListServlet");
     }
 }

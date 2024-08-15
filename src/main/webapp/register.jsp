@@ -64,11 +64,13 @@
     <h1>新規ユーザー登録</h1>
     <div class="container">
         <form action="RegisterServlet" method="post">
-            <label for="userID">ユーザーID:</label>
-            <input type="text" id="userID" name="userID"><br><br>
+            <label for="username">ユーザー名:</label>
+            <input type="text" id="username" name="username"><br><br>
             <label for="password">パスワード:</label>
             <input type="password" id="password" name="password"><br><br>
+            <input type="checkbox" id="adminflag" name="adminflag" value="1">管理者権限
             <input type="submit" value="登録">
+            
         </form>
         <form action="index.html" method="get">
             <input type="submit" value="ログイン画面に戻る">
