@@ -36,7 +36,9 @@
             margin-bottom: 8px;
         }
         input[type="text"],
-        textarea {
+        input[type="number"],
+        textarea,
+        select {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -58,9 +60,19 @@
         input[type="submit"]:hover {
             background-color: #45a049;
         }
-        .error {
-            color: red;
+        .error, .success {
             margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .error {
+            color: white;
+            background-color: red;
+        }
+        .success {
+            color: white;
+            background-color: green;
         }
     </style>
 </head>
@@ -71,18 +83,31 @@
         <c:if test="${not empty errorMessage}">
             <div class="error">${errorMessage}</div>
         </c:if>
+        <!-- 登録成功メッセージの表示 -->
+        <c:if test="${not empty successMessage}">
+            <div class="success">${successMessage}</div>
+        </c:if>
         <form action="AddProductServlet" method="post">
             <label for="name">商品名:</label>
             <input type="text" id="name" name="name" required><br><br>
 
-            <label for="price">価格(数値として入力):</label>
-            <input type="text" id="price" name="price" required><br><br>
+            <label for="price">価格(整数として入力):</label>
+            <input type="number" id="price" name="price" required min="0" step="1"><br><br>
 
             <label for="category">カテゴリー:</label>
-            <input type="text" id="category" name="category" required><br><br>
+            <select id="category" name="category" required>
+                <option value="日用雑貨品">日用雑貨品</option>
+                <option value="食品">食品</option>
+                <option value="家電製品">家電製品</option>
+                <option value="ファッション用品">ファッション用品</option>
+                <option value="レジャー用品">レジャー用品</option>
+            </select><br><br>
 
             <label for="description">説明:</label>
             <textarea id="description" name="description"></textarea><br><br>
+
+            <label for="stock">在庫数:</label>
+            <input type="number" id="stock" name="stock" required min="0" step="1"><br><br>
 
             <input type="submit" value="追加">
         </form>
@@ -92,4 +117,3 @@
     </div>
 </body>
 </html>
-

@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ page pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -31,6 +32,7 @@
         th {
             background-color: #4CAF50;
             color: white;
+            position: relative;
         }
         tr:nth-child(even) {
             background-color: #f2f2f2;
@@ -38,8 +40,9 @@
         tr:hover {
             background-color: #ddd;
         }
-        form {
-            display: inline-block;
+        a {
+            color: white;
+            text-decoration: none;
         }
         input[type="submit"] {
             background-color: #4CAF50;
@@ -64,7 +67,7 @@
         a:hover {
             background-color: #45a049;
         }
-        .sort-buttons, .search-bar {
+        .search-bar {
             text-align: center;
             margin-bottom: 20px;
         }
@@ -82,20 +85,6 @@
 </head>
 <body>
     <h1>商品一覧</h1>
-    <div class="sort-buttons">
-        <!-- 価格昇順で並べ替えるフォーム -->
-        <form action="ProductListServlet" method="get">
-            <input type="hidden" name="action" value="sort">
-            <input type="hidden" name="sortOrder" value="asc">
-            <input type="submit" value="価格昇順">
-        </form>
-        <!-- 価格降順で並べ替えるフォーム -->
-        <form action="ProductListServlet" method="get">
-            <input type="hidden" name="action" value="sort">
-            <input type="hidden" name="sortOrder" value="desc">
-            <input type="submit" value="価格降順">
-        </form>
-    </div>
     <div class="search-bar">
         <!-- 商品IDで検索するフォーム -->
         <form action="ProductListServlet" method="get">
@@ -109,19 +98,21 @@
         <h2>検索結果</h2>
         <p>ID: ${searchResult.id}</p>
         <p>商品名: ${searchResult.name}</p>
-        <p>価格: ${searchResult.price} 円</p>
+        <p>価格: <fmt:formatNumber value="${searchResult.price}" type="number" /> 円</p>
         <p>カテゴリー: ${searchResult.category}</p>
         <p>説明: ${searchResult.description}</p>
+        <p>在庫数: ${searchResult.stock}</p> <!-- 在庫数の表示 -->
         <p>更新日: ${searchResult.updatedDate}</p>
     </c:if>
     <table>
         <tr>
-            <th>ID</th>
-            <th>商品名</th>
-            <th>価格</th>
-            <th>カテゴリー</th>
-            <th>説明</th>
-            <th>更新日</th>
+            <th><a href="?action=sort&sortBy=id&sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'}">ID</a></th>
+            <th><a href="?action=sort&sortBy=name&sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'}">商品名</a></th>
+            <th><a href="?action=sort&sortBy=price&sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'}">価格</a></th>
+            <th><a href="?action=sort&sortBy=category&sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'}">カテゴリー</a></th>
+            <th><a href="?action=sort&sortBy=description&sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'}">説明</a></th>
+            <th><a href="?action=sort&sortBy=stock&sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'}">在庫数</a></th>
+            <th><a href="?action=sort&sortBy=updated_date&sortOrder=${sortOrder == 'asc' ? 'desc' : 'asc'}">更新日</a></th>
             <th>操作</th>
         </tr>
         <!-- 商品リストの表示 -->
@@ -129,9 +120,10 @@
             <tr>
                 <td>${product.id}</td>
                 <td>${product.name}</td>
-                <td>${product.price} 円</td>
+                <td><fmt:formatNumber value="${product.price}" type="number" /> 円</td>
                 <td>${product.category}</td>
                 <td>${product.description}</td>
+                <td>${product.stock}</td> <!-- 在庫数の表示 -->
                 <td>${product.updatedDate}</td>
                 <td>
                     <!-- 商品削除フォーム -->
@@ -156,6 +148,9 @@
 
                             <label for="description-${product.id}">説明:</label>
                             <textarea id="description-${product.id}" name="description">${product.description}</textarea><br><br>
+
+                            <label for="stock-${product.id}">在庫数:</label> <!-- 在庫数の編集フォーム -->
+                            <input type="text" id="stock-${product.id}" name="stock" value="${product.stock}" required><br><br>
 
                             <input type="submit" value="更新">
                         </form>

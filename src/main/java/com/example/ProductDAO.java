@@ -14,17 +14,16 @@ import java.util.logging.Logger;
 public class ProductDAO {
     private static final Logger LOGGER = Logger.getLogger(ProductDAO.class.getName());
 
-    private String jdbcURL = "jdbc:postgresql://localhost:5432/productdb"; // PostgreSQLのURLを確認
-    private String jdbcUsername = "postgres"; // 正しいユーザー名
-    private String jdbcPassword = "password"; // 正しいパスワード
+    private String jdbcURL = "jdbc:postgresql://localhost:5432/productdb";
+    private String jdbcUsername = "postgres";
+    private String jdbcPassword = "password";
 
     private static final String SELECT_ALL_PRODUCTS = "SELECT * FROM products";
-    private static final String INSERT_PRODUCT_SQL = "INSERT INTO products (name, price, category, description, updated_date) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_PRODUCT_SQL = "INSERT INTO products (name, price, category, description, updated_date, stock) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String DELETE_PRODUCT_SQL = "DELETE FROM products WHERE id = ?";
     private static final String SELECT_PRODUCT_BY_ID = "SELECT * FROM products WHERE id = ?";
-    private static final String UPDATE_PRODUCT_SQL = "UPDATE products SET name = ?, price = ?, category = ?, description = ?, updated_date = ? WHERE id = ?";
-    private static final String SELECT_ALL_PRODUCTS_SORTED = "SELECT * FROM products ORDER BY price ";
-
+    private static final String UPDATE_PRODUCT_SQL = "UPDATE products SET name = ?, price = ?, category = ?, description = ?, updated_date = ?, stock = ? WHERE id = ?";
+    
     public ProductDAO() {}
 
     protected Connection getConnection() throws SQLException {
@@ -54,7 +53,8 @@ public class ProductDAO {
                 String category = rs.getString("category");
                 String description = rs.getString("description");
                 Date updatedDate = rs.getDate("updated_date");
-                products.add(new Product(id, name, price, category, description, updatedDate));
+                int stock = rs.getInt("stock");
+                products.add(new Product(id, name, price, category, description, updatedDate, stock));
             }
             LOGGER.info("Products retrieved successfully.");
         } catch (SQLException e) {
@@ -76,7 +76,8 @@ public class ProductDAO {
                 String category = rs.getString("category");
                 String description = rs.getString("description");
                 Date updatedDate = rs.getDate("updated_date");
-                product = new Product(id, name, price, category, description, updatedDate);
+                int stock = rs.getInt("stock");
+                product = new Product(id, name, price, category, description, updatedDate, stock);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -85,9 +86,9 @@ public class ProductDAO {
         return product;
     }
 
-    public List<Product> getAllProductsSorted(String sortOrder) throws SQLException {
+    public List<Product> getAllProductsSorted(String sortBy, String sortOrder) throws SQLException {
         List<Product> products = new ArrayList<>();
-        String query = SELECT_ALL_PRODUCTS_SORTED + (sortOrder.equals("desc") ? "DESC" : "ASC");
+        String query = "SELECT * FROM products ORDER BY " + sortBy + " " + sortOrder;
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             ResultSet rs = preparedStatement.executeQuery();
@@ -98,7 +99,8 @@ public class ProductDAO {
                 String category = rs.getString("category");
                 String description = rs.getString("description");
                 Date updatedDate = rs.getDate("updated_date");
-                products.add(new Product(id, name, price, category, description, updatedDate));
+                int stock = rs.getInt("stock");
+                products.add(new Product(id, name, price, category, description, updatedDate, stock));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -115,6 +117,7 @@ public class ProductDAO {
             preparedStatement.setString(3, product.getCategory());
             preparedStatement.setString(4, product.getDescription());
             preparedStatement.setDate(5, product.getUpdatedDate());
+            preparedStatement.setInt(6, product.getStock());
 
             int rowsInserted = preparedStatement.executeUpdate();
             if (rowsInserted > 0) {
@@ -152,7 +155,8 @@ public class ProductDAO {
             preparedStatement.setString(3, product.getCategory());
             preparedStatement.setString(4, product.getDescription());
             preparedStatement.setDate(5, product.getUpdatedDate());
-            preparedStatement.setInt(6, product.getId());
+            preparedStatement.setInt(6, product.getStock());
+            preparedStatement.setInt(7, product.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -160,3 +164,4 @@ public class ProductDAO {
         }
     }
 }
+

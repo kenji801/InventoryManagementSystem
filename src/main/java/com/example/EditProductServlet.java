@@ -18,20 +18,23 @@ public class EditProductServlet extends HttpServlet {
         response.setContentType("text/html; charset=UTF-8");
 
         try {
+            // リクエストパラメータからデータを取得
             int id = Integer.parseInt(request.getParameter("id"));
             String name = request.getParameter("name");
             double price = Double.parseDouble(request.getParameter("price"));
             String category = request.getParameter("category");
             String description = request.getParameter("description");
+            int stock = Integer.parseInt(request.getParameter("stock")); // 在庫数を取得
 
             LocalDate localDate = LocalDate.now();
             Date updatedDate = Date.valueOf(localDate);
 
             // 商品オブジェクトを作成
-            Product product = new Product(id, name, price, category, description, updatedDate);
+            Product product = new Product(id, name, price, category, description, updatedDate, stock);
             ProductDAO productDAO = new ProductDAO();
             productDAO.updateProduct(product);
 
+            // 更新後に商品一覧ページにリダイレクト
             response.sendRedirect("ProductListServlet");
         } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();

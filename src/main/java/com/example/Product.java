@@ -6,22 +6,23 @@ public class Product {
     private int id;
     private String name;
     private double price;
-    private String category; // カテゴリフィールドを追加
+    private String category;
     private String description;
     private Date updatedDate;
+    private int stock; // 在庫数フィールド追加
 
-    public Product() {}
-
-    public Product(int id, String name, double price, String category, String description, Date updatedDate) {
+    // 新しいコンストラクタ
+    public Product(int id, String name, double price, String category, String description, Date updatedDate, int stock) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.category = category;
         this.description = description;
         this.updatedDate = updatedDate;
+        this.stock = stock;
     }
 
-    // Getter and Setter methods
+    // ゲッターとセッター
     public int getId() {
         return id;
     }
@@ -69,4 +70,13 @@ public class Product {
     public void setUpdatedDate(Date updatedDate) {
         this.updatedDate = updatedDate;
     }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
 }
+

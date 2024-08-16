@@ -15,31 +15,35 @@ public class ProductListServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            ProductDAO productDAO = new ProductDAO();
-            String action = request.getParameter("action");
-            List<Product> productList;
+        String action = request.getParameter("action");
+        String sortBy = request.getParameter("sortBy");
+        String sortOrder = request.getParameter("sortOrder");
+        ProductDAO productDAO = new ProductDAO();
 
-            if ("search".equals(action)) {
+        try {
+            if ("sort".equals(action) && sortBy != null && sortOrder != null) {
+                // 並び替えを行う
+                List<Product> productList = productDAO.getAllProductsSorted(sortBy, sortOrder);
+                request.setAttribute("productList", productList);
+                request.setAttribute("sortOrder", sortOrder); // 現在のソート順を保存
+            } else if ("search".equals(action)) {
+                // 商品IDで検索を行う
                 String idStr = request.getParameter("id");
                 if (idStr != null && !idStr.isEmpty()) {
                     int id = Integer.parseInt(idStr);
-                    Product product = productDAO.getProductById(id);
-                    request.setAttribute("searchResult", product);
+                    Product searchResult = productDAO.getProductById(id);
+                    request.setAttribute("searchResult", searchResult);
                 }
-                productList = productDAO.getAllProducts();
-            } else if ("sort".equals(action)) {
-                String sortOrder = request.getParameter("sortOrder");
-                productList = productDAO.getAllProductsSorted(sortOrder);
             } else {
-                productList = productDAO.getAllProducts();
+                // すべての商品を表示
+                List<Product> productList = productDAO.getAllProducts();
+                request.setAttribute("productList", productList);
             }
-
-            request.setAttribute("productList", productList);
-            request.getRequestDispatcher("product_list.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ServletException(e);
+            request.setAttribute("error", "データベースエラーが発生しました。");
         }
+
+        request.getRequestDispatcher("product_list.jsp").forward(request, response);
     }
 }

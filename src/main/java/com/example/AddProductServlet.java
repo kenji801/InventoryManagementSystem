@@ -24,44 +24,39 @@ public class AddProductServlet extends HttpServlet {
             String priceStr = request.getParameter("price");
             String category = request.getParameter("category");
             String description = request.getParameter("description");
+            String stockStr = request.getParameter("stock");
 
             // LocalDateをjava.sql.Dateに変換
             LocalDate localDate = LocalDate.now();
             Date updatedDate = Date.valueOf(localDate);
 
-            // 価格のバリデーション
-            int price;
+            // 価格と在庫数のバリデーション
+            int price, stock;
             try {
                 price = Integer.parseInt(priceStr);
+                stock = Integer.parseInt(stockStr);
             } catch (NumberFormatException e) {
-                request.setAttribute("errorMessage", "価格は数値で入力してください。");
+                request.setAttribute("errorMessage", "価格と在庫数は数値で入力してください。");
                 request.getRequestDispatcher("add_product.jsp").forward(request, response);
                 return;
             }
 
-            Product product = new Product();
+            Product product = new Product(stock, stockStr, stock, stockStr, stockStr, updatedDate, stock);
             product.setName(name);
             product.setPrice(price);
             product.setCategory(category);
             product.setDescription(description);
+            product.setStock(stock);
             product.setUpdatedDate(updatedDate);
 
             productDAO.addProduct(product);
 
             System.out.println("商品追加成功: " + product.getName());
 
-            // 商品リストを取得してコンソールに出力
-            System.out.println("Updated product list:");
-            for (Product p : productDAO.getAllProducts()) {
-                System.out.println(p.getName() + " - " + p.getPrice());
-            }
-
-            // リダイレクトして更新された商品リストを表示する
-            response.sendRedirect("ProductListServlet");
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            request.setAttribute("errorMessage", "Invalid input format for price.");
+            // 成功メッセージを設定して同じページに戻る
+            request.setAttribute("successMessage", "登録に成功しました！");
             request.getRequestDispatcher("add_product.jsp").forward(request, response);
+
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("errorMessage", "An error occurred while adding the product.");
