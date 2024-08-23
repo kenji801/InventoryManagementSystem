@@ -1,8 +1,10 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>商品マスタ管理システム</title>
+    <title>新規ユーザー登録</title>
     <style>
         body {
             background-color: #f0f8ff; /* ライトブルーの背景色 */
@@ -59,16 +61,20 @@
     </style>
 </head>
 <body>
-    <h1>商品マスタ管理システム</h1>
+    <h1>新規ユーザー登録</h1>
     <div class="container">
-        <form action="LoginServlet" method="post">
-            <label for="userid">社員番号:</label>
-            <input type="text" id="userid" name="userid"><br><br>
-            <label for="password">パスワード:</label>
+        <form action="ChangePasswordServlet" method="post">
+            <label for="password">現在のパスワード:</label>
             <input type="password" id="password" name="password"><br><br>
-            <input type="submit" value="ログイン">
+            <label for="newPassword">新しいのパスワード:</label>
+            <input type="Password" id="newPassword" name="newPassword"><br><br>
+            
+            <input type="submit" value="登録">
+            
         </form>
-        
+        <form action="main.jsp" method="get">
+            <input type="submit" value="メイン画面に戻る">
+        </form>
     </div>
 </body>
 </html>

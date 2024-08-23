@@ -1,6 +1,7 @@
 package com.example;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,8 +24,9 @@ public class UserDAO {
     private static final String SELECT_ALL_USER_SORTED = "SELECT * FROM users ORDER BY userid";
     
     
-    private static final String DELETE_USER_SQL = "DELETE FROM users WHERE userid = ?";
-    private static final String UPDATE_USER_SQL = "UPDATE users SET username = ?, adminflag = ? WHERE userid = ?";
+    private static final String DELETE_USER_SQL = "UPDATE users SET deleteflag = ?, updated_date = ? WHERE userid = ?";
+    private static final String UPDATE_USER_SQL = "UPDATE users SET username = ?, adminflag = ?, mail = ?, updated_date = ? WHERE userid = ?";
+    private static final String UPDATE_PASSWORD_SQL = "UPDATE users SET password = ?, updated_date = ? WHERE userid = ? AND password = ?";
     
 	
 	 protected Connection getConnection() throws SQLException {
@@ -59,7 +61,11 @@ public class UserDAO {
             	username = resultSet.getString("username");
                 password = resultSet.getString("password");
                 int adminflag = resultSet.getInt("adminflag");
-                user = new User(userid, username, password, adminflag);
+                String mail = resultSet.getString("mail");
+                Date registered_date = resultSet.getDate("registered_date");
+                Date updated_date = resultSet.getDate("updated_date");
+                Date last_login_date = resultSet.getDate("last_login_date");
+                user = new User(userid, username, password, adminflag,mail,registered_date,updated_date,last_login_date);
                
             }
         } catch (SQLException e) {
@@ -70,14 +76,20 @@ public class UserDAO {
     }
 
     public void addUser(User user) throws ClassNotFoundException {
-        String query = "INSERT INTO users (username, password,adminflag) VALUES (?, ?, ?)";
+        String query = "INSERT INTO users (userid,username, password,adminflag,mail,registered_date,updated_date,last_login_date,deleteflag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.setString(1, user.getusername());
-            statement.setString(2, user.getPassword());
-            statement.setInt(3, user.getAdminflag());
+        	statement.setInt(1, user.getUserid());
+            statement.setString(2, user.getusername());
+            statement.setString(3, user.getPassword());
+            statement.setInt(4, user.getAdminflag());
+            statement.setString(5, user.getMail());
+            statement.setDate(6, (java.sql.Date) user.getRegistered_date());
+            statement.setDate(7, (java.sql.Date) user.getUpdated_date());
+            statement.setDate(8, (java.sql.Date) user.getLast_login_date());
+            statement.setBoolean(9, false);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,7 +106,12 @@ public class UserDAO {
                 String username = rs.getString("username");
                 String password = rs.getString("password");
                 int adminflag = rs.getInt("adminflag");
-                users.add(new User(userid, username, password, adminflag));
+                String mail = rs.getString("mail");
+                Date registered_date = rs.getDate("registered_date");
+                Date updated_date = rs.getDate("updated_date");
+                Date last_login_date = rs.getDate("last_login_date");
+                boolean deleteflag = rs.getBoolean("deleteflag");
+                users.add(new User(userid, username, password, adminflag,mail,registered_date,updated_date,last_login_date,deleteflag));
             }
             LOGGER.info("Users retrieved successfully.");
         } catch (SQLException e) {
@@ -115,7 +132,11 @@ public class UserDAO {
             	String username = rs.getString("username");
                 String password = rs.getString("password");
                 int adminflag = rs.getInt("adminflag");
-                user = new User(userid, username, password, adminflag);
+                String mail = rs.getString("mail");
+                Date registered_date = rs.getDate("registered_date");
+                Date updated_date = rs.getDate("updated_date");
+                Date last_login_date = rs.getDate("last_login_date");
+                user = new User(userid, username, password, adminflag,mail,registered_date,updated_date,last_login_date);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -124,9 +145,9 @@ public class UserDAO {
         return user;
     }
     
-    public List<User> getAllUsersSorted(String sortOrder) throws SQLException {
+    public List<User> getAllUsersSorted(String sortBy, String sortOrder) throws SQLException {
         List<User> users = new ArrayList<>();
-        String query = SELECT_ALL_USER_SORTED + (sortOrder.equals("desc") ? "DESC" : "ASC");
+        String query = "SELECT * FROM users ORDER BY " + sortBy + " " + sortOrder;
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             ResultSet rs = preparedStatement.executeQuery();
@@ -135,7 +156,11 @@ public class UserDAO {
             	String username = rs.getString("username");
                 String password = rs.getString("password");
                 int adminflag = rs.getInt("adminflag");
-                users.add(new User(userid, username, password, adminflag));
+                String mail = rs.getString("mail");
+                Date registered_date = rs.getDate("registered_date");
+                Date updated_date = rs.getDate("updated_date");
+                Date last_login_date = rs.getDate("last_login_date");
+                users.add(new User(userid, username, password, adminflag,mail,registered_date,updated_date,last_login_date));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -147,7 +172,11 @@ public class UserDAO {
     public void deleteUser(int userid) throws SQLException {
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_SQL)) {
-            preparedStatement.setInt(1, userid);
+        	long millis = System.currentTimeMillis();
+        	preparedStatement.setBoolean(1, true);
+        	preparedStatement.setDate(2, new Date(millis));
+            preparedStatement.setInt(3, userid);
+            
             int rowsDeleted = preparedStatement.executeUpdate();
             if (rowsDeleted > 0) {
                 LOGGER.info("user deleted successfully.");
@@ -158,14 +187,56 @@ public class UserDAO {
             LOGGER.log(Level.SEVERE, "SQL Error: " + e.getMessage(), e);
             throw e;
         }
+        
+        
+    }
+    
+    public void releaseUser(int userid) throws SQLException {
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_SQL)) {
+        	long millis = System.currentTimeMillis();
+        	preparedStatement.setBoolean(1, false);
+        	preparedStatement.setDate(2, new Date(millis));
+            preparedStatement.setInt(3, userid);
+            
+            int rowsDeleted = preparedStatement.executeUpdate();
+            if (rowsDeleted > 0) {
+                LOGGER.info("user deleted successfully.");
+            } else {
+                LOGGER.warning("No rows deleted.");
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQL Error: " + e.getMessage(), e);
+            throw e;
+        }
+        
     }
 
     public void updateUser(User user) throws SQLException {
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USER_SQL)) {
-        	preparedStatement.setInt(3, user.getUserid());
+            long millis = System.currentTimeMillis();
+        	preparedStatement.setInt(5, user.getUserid());
             preparedStatement.setString(1, user.getusername());
             preparedStatement.setInt(2, user.getAdminflag());
+            preparedStatement.setString(3, user.getMail());
+            preparedStatement.setDate(4, new Date(millis));
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+    
+    public void updatePassword(int userid,String password,String newPassword) throws SQLException {
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_PASSWORD_SQL)) {
+            long millis = System.currentTimeMillis();
+        	preparedStatement.setString(1, newPassword);
+        	 preparedStatement.setDate(2, new Date(millis));
+            preparedStatement.setInt(3, userid);
+            preparedStatement.setString(4, password);
+         
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

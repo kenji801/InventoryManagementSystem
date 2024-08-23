@@ -48,13 +48,16 @@
     </style>
 </head>
 <body>
-    <h1>ようこそ <%= session.getAttribute("userID") %> さん</h1>
+    <h1>ようこそ <%= session.getAttribute("username") %> さん</h1>
     <div class="container">
         <form action="ProductListServlet" method="get">
             <input type="submit" value="既存商品一覧表示">
         </form>
         <form action="add_product.jsp" method="get">
             <input type="submit" value="新規商品追加">
+        </form>
+        <form action="Change_password.jsp" method="post">
+            <input type="submit" value="パスワード変更">
         </form>
         <form action="LogoutServlet" method="post">
             <input type="submit" value="ログアウト">

@@ -18,31 +18,28 @@ public class UserListServlet extends HttpServlet {
         try {
             UserDAO userDAO = new UserDAO();
             String action = request.getParameter("action");
-            List<User> userList;
+            String sortBy = request.getParameter("sortBy");
+            String sortOrder = request.getParameter("sortOrder");
 
-            if ("search".equals(action)) {
+            if ("sort".equals(action) && sortBy != null && sortOrder != null) {
+                // 並び替えを行う
+                List<User> userList = userDAO.getAllUsersSorted(sortBy, sortOrder);
+                request.setAttribute("userList", userList);
+                request.setAttribute("sortOrder", sortOrder); // 現在のソート順を保存
+            } else if ("search".equals(action)) {
+                // 商品IDで検索を行う
                 String idStr = request.getParameter("userid");
                 if (idStr != null && !idStr.isEmpty()) {
                     int id = Integer.parseInt(idStr);
-                    User user = userDAO.getUserById(id);
-                    request.setAttribute("searchResult", user);
+                    User searchResult = userDAO.getUserById(id);
+                    request.setAttribute("searchResult", searchResult);
                 }
-                userList = userDAO.getAllUsers();
-            } else if ("sort".equals(action)) {
-                String sortOrder = request.getParameter("sortOrder");
-                userList = userDAO.getAllUsersSorted(sortOrder);
             } else {
-            	userList = userDAO.getAllUsers();
+                // すべての商品を表示
+                List<User> userList = userDAO.getAllUsers();
+                request.setAttribute("userList", userList);
+                request.getRequestDispatcher("user_list.jsp").forward(request, response);
             }
-            
-            // デバッグ用のログを追加
-            System.out.println("User List:");
-            for (User user : userList) {
-                System.out.println("ID: " + user.getusername() + ", AdminFlag: " + user.getAdminflag());
-            }
-
-            request.setAttribute("userList", userList);
-            request.getRequestDispatcher("user_list.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
             throw new ServletException(e);
